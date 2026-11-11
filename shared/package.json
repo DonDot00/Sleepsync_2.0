@@ -1,0 +1,7 @@
+{
+  "name": "@sleepsync/shared",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "dependencies": { "zod": "^4.0.0" }
+}

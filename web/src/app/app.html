@@ -1,0 +1,108 @@
+<div class="app">
+
+  <!-- ── Topbar ── -->
+  <div class="topbar">
+    <span class="logo">SleepSync</span>
+    <span class="topbar-date">{{ today }}</span>
+    <div class="topbar-score">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="#a78fff" opacity="0.9" />
+      </svg>
+      Sleep score: {{ sleepScore() }}
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- ── Left panel — mini calendar ── -->
+    <div class="panel left-panel">
+      <app-month-calendar
+        [selectedDate]="selectedDate()" [eventDays]="eventDays()"
+        (selectDate)="selectedDate.set($event)" />
+    </div>
+
+    <!-- ── Center panel — calendar grid ── -->
+    <div class="center-panel" #centerPanel>
+      <div class="today-header">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <span class="today-label">{{ selectedLabel() }}</span>
+          <div class="header-bedtime">
+            <span class="header-bedtime-label">Bedtime</span>
+            <input class="header-bedtime-input" type="time" [value]="bedtime()"
+              (change)="bedtime.set($any($event.target).value)" />
+          </div>
+          <span class="today-sub">{{ events().length }} events</span>
+        </div>
+        <button class="add-event-btn" (click)="showAdd.set(true)">+ Add event</button>
+      </div>
+
+      <app-energy-slider [value]="energy()" (changed)="energy.set($event)" />
+
+      @if (energy() <= 2 && showEnergyWarning()) {
+        <div class="energy-warning">
+          <span>Low energy today — I'll suggest lighter tasks and extra breaks.</span>
+          <button class="energy-warn-close" (click)="showEnergyWarning.set(false)">✕</button>
+        </div>
+      }
+
+      <!-- scrollable calendar grid -->
+      <div class="cal-scroll-area" #scrollArea>
+        <div class="cal-grid-inner">
+
+          <div class="hour-labels-col">
+            @for (label of hourLabels; track $index) {
+              <div class="hour-label-row" [style.height.px]="hourPx">
+                <span class="hour-label">{{ label }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="day-cols-flex">
+            <div class="day-headers-row">
+              @for (col of dayCols(); track col.offset) {
+                <div class="day-col-header-cell">{{ col.title }}</div>
+              }
+            </div>
+            <div class="day-cols-body">
+              @for (col of dayCols(); track col.offset; let i = $index) {
+                <div class="day-col-flex-item" [class.day-col-divider]="i > 0">
+                  <app-day-column
+                    [events]="col.evs" [bedtimeH]="bedtimeH()"
+                    [nowH]="col.offset === 0 ? nowH() : null"
+                    (clickEvent)="modalEv.set($event)"
+                    (moved)="onMoved($event)" />
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Right panel — sleep health + AI chat ── -->
+    <div class="right-panel">
+      <app-sleep-health
+        [showTip]="showTip()" [tip]="tip"
+        (dismissTip)="showTip.set(false)" (dontShowTip)="showTip.set(false)"
+        [bedtime]="bedtime()" (bedtimeChange)="bedtime.set($event)"
+        [waketime]="waketime()" (waketimeChange)="waketime.set($event)"
+        [sleepRecord]="sleepRecord()" />
+      <app-ai-chat
+        [energy]="energy()" [bedtime]="bedtime()" [waketime]="waketime()"
+        (eventCreated)="refreshEvents()" />
+    </div>
+  </div>
+</div>
+
+@if (modalEv(); as ev) {
+  <app-event-modal
+    [ev]="ev"
+    (close)="modalEv.set(null)" (save)="onSave($event)"
+    (remove)="onDelete($event)" (cancelSeries)="onCancelSeries($event)" />
+}
+
+@if (showAdd()) {
+  <app-add-event-modal
+    [defaultDayOffset]="selectedOffset()"
+    (close)="showAdd.set(false)" (add)="onAdd($event)" />
+}

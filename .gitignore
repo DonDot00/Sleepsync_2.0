@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+web/.angular/
+*.tsbuildinfo
+
+# Secrets & local config
+.env
+*.env
+.env.local
+.vercel/
+
+# Local databases
+*.db
+*.db.bak
+*.sqlite
+*.sqlite3
+
+# Generated (contains your URL / IP — regenerate with `npm run shortcut`)
+SleepSync.shortcut
+
+# Logs & temp
+*.log
+*.tmp
+.cache/
+npm-debug.log*
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
